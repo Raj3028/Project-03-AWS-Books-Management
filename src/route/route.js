@@ -1,18 +1,15 @@
 //=====================Importing Module and Packages=====================//
 const express = require('express');
 const router = express.Router();
+const { createUser, loginUser } = require('../Controller/userController')
 
 
+//===================== User Registration(Post API) =====================//
+router.post("/register", createUser)
 
+//===================== User Login(Post API) =====================//
+router.post("/login", loginUser)
 
-//=====================Create College Data(Post API)=====================//
-router.post("/functionup/colleges", createCollege)
-
-//=====================Create Intern Data(Post API)=====================//
-router.post("/functionup/interns", createIntern)
-
-//=====================Create Intern Data(Post API)=====================//
-router.get("/functionup/collegeDetails", getCollegeData)
 
 
 
