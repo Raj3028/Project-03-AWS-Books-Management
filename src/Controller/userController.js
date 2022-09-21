@@ -1,6 +1,6 @@
 const userModel = require("../Model/userModel")
 const JWT = require('jsonwebtoken')
-const { checkInputsPresent, checkString, validateName, validateEmail, validatePassword, validateTitle, validateMobileNo } = require('../Validator/validator')
+const { checkInputsPresent, checkString, validatePincode, validateName, validateEmail, validatePassword, validateTitle, validateMobileNo } = require('../Validator/validator')
 
 
 //<<<=====================This function is used for Registration User=====================>>>//
@@ -51,7 +51,7 @@ const createUser = async (req, res) => {
             if (!validateName(address.city)) return res.status(400).send({ status: false, msg: "Invalid City Address Format." });
 
             //=====================Validation of Address Pincode=====================//
-            if (!(/^[1-9][0-9]{5}$/).test(address.pincode)) return res.status(400).send({ status: false, msg: "Invalid Pincode Format." });
+            if (!validatePincode(address.pincode)) return res.status(400).send({ status: false, msg: "Invalid Pincode Format." });
         }
 
         //=====================Fetching Phone No. from DB and Checking Duplicate Phone No. is Present or Not=====================//

@@ -27,13 +27,13 @@ const bookModel = new mongoose.Schema({
         require: true
     },
     subcategory: {
-        type: String,
+        type: [String],
         require: true
     },
     reviews: {
         type: Number,
         default: 0,
-        Comment: 'Holds number of reviews of this book'
+        // Comment: 'Holds number of reviews of this book'
     },
     deletedAt: {
         type: Date,
