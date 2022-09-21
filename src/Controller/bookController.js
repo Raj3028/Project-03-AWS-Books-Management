@@ -1,6 +1,7 @@
 const moment = require('moment')
 const bookModel = require('../Model/bookModel')
 const userModel = require("../Model/userModel")
+const reviewModel = require('../Model/reviewModel')
 const ObjectId = require('mongoose').Types.ObjectId
 const { checkInputsPresent, checkString, validatePincode, validateName, validateEmail, validatePassword, validateTitle, validateMobileNo, validateISBN, validateDate } = require('../Validator/validator')
 
@@ -71,20 +72,20 @@ const getAllBooks = async (req, res) => {
 
             let { userId, category, subcategory, ...rest } = query
 
-            if (rest) { return res.status(400).send({ status: false, msg: "You have to put only userId or category or subcategory." }) }
+            if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, msg: "You have to put only userId or category or subcategory." }) }
 
             if (!ObjectId.isValid(userId)) { return res.status(400).send({ status: false, msg: `${userId} is not Valid.` }) }
 
             if (userId) {
-                if (!ObjectId.values(userId)) { return res.status(400).send({ status: false, msg: `Please insert ${userId} value.` }) }
+                if (!Object.values(userId)) { return res.status(400).send({ status: false, msg: `Please insert ${userId} value.` }) }
             }
 
             if (category) {
-                if (!ObjectId.values(category)) { return res.status(400).send({ status: false, msg: `Please insert ${category} value.` }) }
+                if (!Object.values(category)) { return res.status(400).send({ status: false, msg: `Please insert ${category} value.` }) }
             }
 
             if (subcategory) {
-                if (!ObjectId.values(subcategory)) { return res.status(400).send({ status: false, msg: `Please insert ${subcategory} value.` }) }
+                if (!Object.values(subcategory)) { return res.status(400).send({ status: false, msg: `Please insert ${subcategory} value.` }) }
             }
 
             if (!(userId || category || subcategory)) { return res.status(400).send({ status: false, msg: "You have to put the value of userId or category or subcategory." }) }
@@ -95,17 +96,19 @@ const getAllBooks = async (req, res) => {
             if (category) obj.category = category.trim()
             if (subcategory) obj.subcategory = subcategory.trim()
 
-            let getDataByQuery = await bookModel.findOne(obj)
+            let getDataByQuery = await bookModel.find({ isDeleted: false, ...obj }).select({ title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1 }).sort({ title: 1 })
+            if (getDataByQuery.length == 0) { return res.status(400).send({ status: false, msg: "Given data is not exist." }) }
 
-            return res.status(200).send({ status: true, data: getDataByQuery })
+            return res.status(200).send({ status: true, message: 'Books list', data: getDataByQuery })
 
         }
 
-        
 
-        let getAllData = await bookModel.find()
 
-        res.status(200).send({ status: true, data: getAllData })
+        let getAllData = await bookModel.find({ isDeleted: false }).select({ title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1 }).sort({ title: 1 })
+        if (getAllData.length == 0) { return res.status(400).send({ status: false, msg: "Given data is not exist." }) }
+
+        res.status(200).send({ status: true, message: 'Books list', data: getAllData })
 
 
     } catch (error) {
@@ -113,6 +116,25 @@ const getAllBooks = async (req, res) => {
         res.status(500).send({ status: 'error', error: error.message })
     }
 
+}
+
+
+const getBookFromId = async (req, res) => {
+    try {
+        let bookId = req.params.bookId;
+        let result = await bookModel.findOne({ _id: bookId, isDeleted: false }).select({ deletedAt: 0, ISBN: 0, __v: 0 });
+
+        let subcategory =result.subcategory.split(',')
+        console.log(subcategory)
+        let reviewsData = await reviewModel.find({ bookId: bookId, isDeleted: false })
+        if (result.reviews == 0) result._doc.reviewsData = [];
+        else result._doc.reviewData = reviewsData
+
+
+        res.status(200).send({ status: true, message: 'Books List', data: result })
+    } catch (error) {
+        res.status(500).send({ status: 'error', error: error.message })
+    }
 }
 
 
@@ -130,12 +152,4 @@ const getAllBooks = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-module.exports = { createBook, getAllBooks }
+module.exports = { createBook, getAllBooks, getBookFromId }
