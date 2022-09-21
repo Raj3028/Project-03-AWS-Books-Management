@@ -27,7 +27,7 @@ const bookModel = new mongoose.Schema({
         require: true
     },
     subcategory: {
-        type: [String],
+        type: String,
         require: true
     },
     reviews: {
@@ -37,7 +37,7 @@ const bookModel = new mongoose.Schema({
     },
     deletedAt: {
         type: Date,
-        default: null
+        // default: null
     },
     isDeleted: {
         type: Boolean,
