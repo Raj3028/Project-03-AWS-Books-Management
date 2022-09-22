@@ -17,7 +17,7 @@ const createUser = async (req, res) => {
         if (!checkInputsPresent(user)) return res.status(400).send({ status: false, message: "Data is not found." });
 
         //=====================Checking Mandotory Field=====================//
-        if (!(title && name && phone && email && password)) { return res.status(400).send({ status: false, message: "All Fields are Mandatory." }) }
+        // if (!(title && name && phone && email && password)) { return res.status(400).send({ status: false, message: "All Fields are Mandatory." }) }
 
         //=====================Validation of Title=====================//
         if (!checkString(title)) return res.status(400).send({ status: false, message: "Please Provide Title." })
@@ -86,15 +86,18 @@ const loginUser = async (req, res) => {
         let { email, password } = data
 
         //=====================Checking Mandotory Field=====================//
-        if (!(email && password)) { return res.status(400).send({ status: false, message: "All Fields are Mandatory(i.e. email & password)." }) }
+        // if (!(email && password)) { return res.status(400).send({ status: false, message: "All Fields are Mandatory(i.e. email & password)." }) }
 
         //=====================Checking Format of Email & Password by the help of Regex=====================//
+        if (!checkString(email)) return res.status(400).send({ status: false, message: "EmailId required to login" })
         if (!validateEmail(email)) { return res.status(400).send({ status: false, message: "Please Check EmailID." }) }
+
+        if (!checkString(password)) return res.status(400).send({ status: false, message: "Password required to login" })
         if (!validatePassword(password)) { return res.status(400).send({ status: false, message: "Re-enter your Correct Password." }) }
 
         //=====================Fetch Data from DB=====================//
         let userData = await userModel.findOne({ email: email, password: password })
-        if (!userData) { return res.status(400).send({ status: false, message: "User is not exist. You need to register first." }) }
+        if (!userData) { return res.status(400).send({ status: false, message: "Invalid Login Credentials! You need to register first." }) }
 
         //x=====================Token Generation by using JWT=====================x//
         let payload = {
@@ -106,13 +109,13 @@ const loginUser = async (req, res) => {
             iat: Math.floor(Date.now() / 1000),
             exp: Math.floor(Date.now() / 1000) + 60 * 60
         }
-        let token = JWT.sign({ payload }, "We-are-from-Group-16", /*{ expiresIn: 60 * 30 }*/)
+        let token = JWT.sign({ payload }, "We-are-from-Group-16", /*{ expiresIn: 60 * 60 }*/)
 
         //x=====================Set Key with value in Response Header=====================x//
         res.setHeader("x-api-key", token)
 
         let obj = { iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 60 * 60 }
-        
+
         //=====================Send Token in Response Body=====================//
         res.status(200).send({ status: true, message: "Token Created Sucessfully", token: token, ...obj })
 

@@ -16,10 +16,17 @@ const createBook = async (req, res) => {
         let { title, excerpt, userId, ISBN, category, subcategory, reviews, releasedAt } = data
 
         //=====================Checking Mandotory Field=====================//
-        if (!(title && excerpt && userId && ISBN && category && subcategory && releasedAt)) {
-            return res.status(400).send({ status: false, message: "All Fields are Mandatory(i.e. title, excerpt, userId, ISBN, category, subcategory, releasedAt)." })
-        }
-        if (userId.trim().length == 0) { return res.status(400).send({ status: false, message: "Please insert valid userId." }) }
+
+        // if (!(title && excerpt && userId && ISBN && category && subcategory && releasedAt)) {
+        //     return res.status(400).send({ status: false, message: "All Fields are Mandatory(i.e. title, excerpt, userId, ISBN, category, subcategory, releasedAt)." })
+        // }
+        // if (userId.trim().length == 0) { return res.status(400).send({ status: false, message: "Please insert valid userId." }) }
+        if (!checkInputsPresent(data)) { return res.status(400).send({ status: false, message: "No data found from body! Provide Mandatory Fields(i.e. title, excerpt, userId, ISBN, category, subcategory, releasedAt)." }) }
+
+        if (isDeleted == true) { return res.status(400).send({ status: false, message: "You can't put isDeleted: true! It should be false at the time of creation (or by default)." }) }
+
+        if (!checkString(userId)) { return res.status(400).send({ status: false, message: "Please Insert userId." }) }
+
 
         //=====================Checking the userId is Valid or Not by Mongoose=====================//
         if (!ObjectId.isValid(userId)) { return res.status(400).send({ status: false, message: `This UserId: ${userId} is not Valid.` }) }
@@ -52,6 +59,7 @@ const createBook = async (req, res) => {
         if (reviews && Object.values(reviews) !== 0) { return res.status(400).send({ status: false, message: "You can't put reviews now." }) }
 
         //=====================Checking Date Format of releasedAt by Regex=====================//
+        if (!checkString(releasedAt)) return res.status(400).send({ status: false, message: "Please Provide releasedAt" });
         if (!validateDate(releasedAt)) return res.status(400).send({ status: false, message: "Invalid Date Format. You should use this format (YYYY-MM-DD)" });
 
 
@@ -155,7 +163,7 @@ const getBookById = async (req, res) => {
 
         //x=====================Fetching All Data from Book DB=====================x//
         let result = await bookModel.findOne({ _id: bookId, isDeleted: false }).select({ deletedAt: 0, ISBN: 0, __v: 0 });
-        if (!result) { return res.status(400).send({ status: false, message: "Given data is not exist." }) }
+        if (!result) { return res.status(404).send({ status: false, message: "Given data is not exist! No Data Found." }) }
 
         //=====================Fetching All Data from Review DB and Checking the value of Review=====================//
         let reviewsData = await reviewModel.find({ bookId: bookId, isDeleted: false })
