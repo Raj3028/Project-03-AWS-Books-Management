@@ -209,10 +209,10 @@ const updateBookById = async (req, res) => {
 
         //x=====================Update the Book=====================x//
         let updateBook = await bookModel.findOneAndUpdate({ _id: bookId, isDeleted: false },
-            { $set: { title: title, excerpt: excerpt, releasedAt: releasedAt, ISBN: ISBN, updatedAt : Date.now() } }, { new: true })
+            { $set: { title: title, excerpt: excerpt, releasedAt: releasedAt, ISBN: ISBN, updatedAt: Date.now() } }, { new: true })
 
         //=====================Checking the Book Data is Present(Updated) or Not=====================//
-        if (!updateBook) { return res.status(404).send({ status: false, message: "Book Updation Unsuccessful" }) }
+        if (!updateBook) { return res.status(404).send({ status: false, message: "No Document Found! Book Updation Unsuccessful" }) }
 
         res.status(200).send({ status: true, message: 'Success', data: updateBook })
 
@@ -237,7 +237,7 @@ const deleteBookById = async (req, res) => {
             { isDeleted: true, deletedAt: Date.now() }, { new: true })
 
         //====================Checking the Book Data is Present(Deleted) or Not======================//
-        if (!deleteByBookId) { return res.status(404).send({ status: false, message: "Book Deletion Unsuccessful" }) }
+        if (!deleteByBookId) { return res.status(404).send({ status: false, message: "No Document Found! Book Deletion Unsuccessful" }) }
 
         res.status(200).send({ status: true, message: 'Book is Deleted Successfully' })
 
