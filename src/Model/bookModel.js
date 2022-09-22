@@ -1,6 +1,8 @@
+//=====================Importing Packages=====================//
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Schema.Types.ObjectId
 
+//=====================Creating Book's Schema=====================//
 const bookModel = new mongoose.Schema({
 
     title: {
@@ -51,4 +53,6 @@ const bookModel = new mongoose.Schema({
 
 }, { timestamps: true })
 
+
+//=====================Module Export=====================//
 module.exports = mongoose.model('Book', bookModel)

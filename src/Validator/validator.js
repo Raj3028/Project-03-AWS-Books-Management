@@ -1,4 +1,4 @@
-//<<<===================== Function for validation =====================>>>//
+//<<<==================================== Function for validation =======================================>>>//
 
 //===================== Checking that there is something as Input =====================//
 const checkInputsPresent = (value) => { return (Object.keys(value).length > 0); }

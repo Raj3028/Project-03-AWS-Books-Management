@@ -1,3 +1,4 @@
+//=====================Importing Module and Packages=====================//
 const userModel = require("../Model/userModel")
 const JWT = require('jsonwebtoken')
 const { checkInputsPresent, checkString, validatePincode, validateName, validateEmail, validatePassword, validateTitle, validateMobileNo } = require('../Validator/validator')
@@ -103,15 +104,17 @@ const loginUser = async (req, res) => {
             Batch: 'Plutonium',
             Project: "Books Management",
             iat: Math.floor(Date.now() / 1000),
-            exp: Math.floor(Date.now() / 1000) + 60 * 30
+            exp: Math.floor(Date.now() / 1000) + 60 * 60
         }
         let token = JWT.sign({ payload }, "We-are-from-Group-16", /*{ expiresIn: 60 * 30 }*/)
 
         //x=====================Set Key with value in Response Header=====================x//
         res.setHeader("x-api-key", token)
 
+        let obj = { iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 60 * 60 }
+        
         //=====================Send Token in Response Body=====================//
-        res.status(200).send({ status: true, message: "Token Created Sucessfully", token: token })
+        res.status(200).send({ status: true, message: "Token Created Sucessfully", token: token, ...obj })
 
     } catch (error) {
 

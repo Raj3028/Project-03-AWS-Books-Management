@@ -1,7 +1,8 @@
+//=====================Importing Packages=====================//
 const mongoose = require("mongoose")
 const ObjectId = mongoose.Schema.Types.ObjectId
 
-
+//=====================Creating Review's Schema=====================//
 const reviewModel = new mongoose.Schema({
 
     bookId: {
@@ -37,4 +38,5 @@ const reviewModel = new mongoose.Schema({
 }, { timestamps: true })
 
 
+//=====================Module Export=====================//
 module.exports = mongoose.model('Review', reviewModel)
