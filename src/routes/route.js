@@ -4,6 +4,8 @@ const router = express.Router();
 const { Authentication, Authorisation } = require('../Middleware/auth')
 const { createUser, loginUser } = require('../Controller/userController')
 const { createBook, getAllBooks, getBookById, updateBookById, deleteBookById } = require('../Controller/bookController')
+const { createReview, updateReview, deleteReview } = require('../Controller/reviewController')
+
 
 
 
@@ -27,6 +29,15 @@ router.put("/books/:bookId", Authentication, Authorisation, updateBookById)
 
 //===================== Delete Books by Path Parameter(Delete API) =====================//
 router.delete("/books/:bookId", Authentication, Authorisation, deleteBookById)
+
+//===================== Delete Books by Path Parameter(Delete API) =====================//
+router.post("/books/:bookId/review", createReview)
+
+//===================== Delete Books by Path Parameter(Delete API) =====================//
+router.put("/books/:bookId/review/:reviewId", updateReview)
+
+//===================== Delete Books by Path Parameter(Delete API) =====================//
+router.delete("/books/:bookId/review/:reviewId", deleteReview)
 
 
 
