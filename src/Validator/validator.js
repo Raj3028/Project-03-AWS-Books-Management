@@ -4,7 +4,13 @@
 const checkInputsPresent = (value) => { return (Object.keys(value).length > 0); }
 
 //===================== Validating that the Input must be a non-empty String =====================//
-const checkString = (value) => { return ((typeof (value) === 'string' && value.trim().length > 0)); }
+// const checkString = (value) => { return ((typeof (value) === 'string' && value.trim().length > 0)); }
+
+const checkString = function (value) {
+    if (typeof value == "number" || typeof value == "undefined" || typeof value == null) { return false }
+    if (typeof value == "string" && value.trim().length == 0) { return false }
+    return true
+}
 
 //===================== Function to validate the input value with Regex =====================//
 const validateName = (value) => { return (/^(?=.{1,50}$)[a-z]+(?:['_.\s][a-z]+)*$/i.test(value)); }

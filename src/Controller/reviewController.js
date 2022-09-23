@@ -3,7 +3,7 @@ const reviewModel = require('../Model/reviewModel')
 const bookModel = require('../Model/bookModel')
 const ObjectId = require('mongoose').Types.ObjectId
 const { checkInputsPresent, checkString, validateName, validateISBN, validateDate } = require('../Validator/validator')
-const { findOneAndDelete, findOneAndUpdate } = require('../Model/bookModel')
+
 
 
 
@@ -26,32 +26,37 @@ const createReview = async (req, res) => {
         if (!checkBookId) { return res.status(400).send({ status: false, message: `Book with this ${BookId} is not Exist or already been deleted.` }) }
 
 
-        if (reviewedBy && !checkString(reviewedBy) && !validateName(reviewedBy)) { return res.status(400).send({ status: false, message: "Please Provide Valid Name in reviewedBy." }) }
-        if (review && !checkString(review) && !validateName(review)) { return res.status(400).send({ status: false, message: "Please Provide Valid Review." }) }
+        if (data.hasOwnProperty('reviewedBy') && !checkString(reviewedBy) && !validateName(reviewedBy)) { return res.status(400).send({ status: false, message: "Please Provide Valid Name in reviewedBy." }) }
+        if (data.hasOwnProperty('review') && !checkString(review) && !validateName(review)) { return res.status(400).send({ status: false, message: "Please Provide Valid Review." }) }
 
 
-        if (rating === 0) {
-            return res.status(400).send({ status: false, message: "Please enter rating in between 1 to 5." })
+        if (rating && (typeof rating !== "number") && (rating === 0) && (rating < 1 || rating > 5)) {
+            return res.status(400).send({ status: false, message: "Please enter valid rating in between range (1 to 5)." })
         }
+
+        // if (!rating && checkString(rating)) {
+        //     return res.status(400).send({ status: false, message: "Please enter rating as Number." })
+        // }
+
+        // if (rating === 0) {
+        //     return res.status(400).send({ status: false, message: "Please enter rating in between 1 to 5." })
+        // }
 
         if (!rating) { return res.status(400).send({ status: false, message: "Please enter rating" }) }
 
-        if (!rating && checkString(rating)) {
-            return res.status(400).send({ status: false, message: "Please enter rating as Number." })
-        }
+       
 
         // if (typeof rating !== "number") {
         //     return res.status(400).send({ status: false, message: "Please enter valid rating." })
         // }
 
+        // if (rating < 1 || rating > 5) {
+        //     return res.status(400).send({ status: false, message: "Please enter rating in between 1 to 5." })
+        // }
 
-        if (rating < 1 || rating > 5) {
-            return res.status(400).send({ status: false, message: "Please enter rating in between 1 to 5." })
-        }
-
-        if (review && !checkString(review)) {
-            return res.status(400).send({ status: false, message: "Please enter valid review." })
-        }
+        // if (review && !checkString(review)) {
+        //     return res.status(400).send({ status: false, message: "Please enter valid review." })
+        // }
 
         data.bookId = BookId
         data.reviewedAt = Date.now()
@@ -102,9 +107,10 @@ const updateReview = async (req, res) => {
 
         if (Object.keys(dataFromBody).length === 0) { return res.status(400).send({ status: false, message: "Please Provide Details to Update Review." }) }
 
-        if (reviewedBy && !checkString(reviewedBy) && !validateName(reviewedBy)) { return res.status(400).send({ status: false, message: "Please Provide Valid Name in reviewedBy." }) }
 
-        if (review && !checkString(review) && !validateName(review)) { return res.status(400).send({ status: false, message: "Please Provide Valid Review." }) }
+        if (dataFromBody.hasOwnProperty('reviewedBy') && !checkString(reviewedBy) && !validateName(reviewedBy)) { return res.status(400).send({ status: false, message: "Please Provide Valid Name in reviewedBy." }) }
+
+        if (dataFromBody.hasOwnProperty('review') && !checkString(review) && !validateName(review)) { return res.status(400).send({ status: false, message: "Please Provide Valid Review." }) }
 
 
         if (rating && (typeof rating !== "number") && (rating === 0) && (rating < 1 || rating > 5)) {
@@ -114,8 +120,6 @@ const updateReview = async (req, res) => {
         // if (rating && ) {
         //     return res.status(400).send({ status: false, message: "Please enter rating in between 1 to 5." })
         // }
-
-
 
 
 
@@ -159,21 +163,22 @@ const deleteReview = async (req, res) => {
         let checkReviewId = await reviewModel.findOne({ _id: reviewId, isDeleted: false });
         if (!checkReviewId) return res.status(400).send({ status: false, message: `This ReviewID: ${reviewId} is not exist in DB.` });
 
-        let deleteReview = await reviewModel.findOneAndUpdate(
-            { _id: reviewId, isDeleted: false, bookdId: bookId },
-            { $set: { isDeleted: true } },
-            { new: true }
-        );
+        // if (checkReviewId['bookId'] != bookId) return res.status(400).send({ status: false, message: "Data Mismatched! you can't delete other book review" });
 
-        if (!deleteReview) return res.status(400).send({ status: false, message: `Review does not found.` });
+        let deleteReview = await reviewModel.findOneAndUpdate(
+            { _id: reviewId, bookId: bookId, isDeleted: false },
+            { $set: { isDeleted: true } });
+
+
+        if (!deleteReview) return res.status(404).send({ status: false, message: "Data Mismatched! Review does not found." });
+
+        // if (checkBookId['reviews'] == 0) return res.status(404).send({ status: false, message: `there is no reviews for the given book with id: ${bookId}.` });
 
         let decreaseReviewCountInBooks = await bookModel.findOneAndUpdate(
             { _id: bookId },
-            { $inc: { reviews: -1 } },
-            { new: true }
-        );
+            { $inc: { reviews: -1 } });
 
-        res.status(200).send({ status: true, message: 'Review deleted successfully.' });
+        res.status(200).send({ status: true, message: 'Review Deleted Successfully.' });
 
     } catch (error) {
 

@@ -36,30 +36,30 @@ const createBook = async (req, res) => {
         if (!checkUserId) { return res.status(400).send({ status: false, message: `${userId} is not Exist.` }) }
 
         //=====================Validation of Title=====================//
-        if (!checkString(title)) return res.status(400).send({ status: false, message: "Please Provide Title." })
+        if (data.hasOwnProperty('title') && !checkString(title)) return res.status(400).send({ status: false, message: "Please Provide Title." })
         if (!validateName(title)) return res.status(400).send({ status: false, message: "Invalid Title." });
 
         //=====================Validation of Excerpt=====================//
-        if (!checkString(excerpt)) return res.status(400).send({ status: false, message: "Please Provide Excerpt." })
+        if (data.hasOwnProperty('excerpt') && !checkString(excerpt)) return res.status(400).send({ status: false, message: "Please Provide Excerpt." })
         if (!validateName(excerpt)) return res.status(400).send({ status: false, message: "Invalid Excerpt." });
 
         //=====================Validation of ISBN=====================//
-        if (!checkString(ISBN)) return res.status(400).send({ status: false, message: "Please Provide ISBN." })
+        if (data.hasOwnProperty('ISBN') && !checkString(ISBN)) return res.status(400).send({ status: false, message: "Please Provide ISBN." })
         if (!validateISBN(ISBN)) return res.status(400).send({ status: false, message: "Invalid ISBN." });
 
         //=====================Validation of category=====================//
-        if (!checkString(category)) return res.status(400).send({ status: false, message: "Please Provide Category." })
+        if (data.hasOwnProperty('category') && !checkString(category)) return res.status(400).send({ status: false, message: "Please Provide Category." })
         if (!validateName(category)) return res.status(400).send({ status: false, message: "Invalid Category." });
 
         //=====================Validation of subcategory=====================//
-        if (!checkString(subcategory)) return res.status(400).send({ status: false, message: "Please Provide Subcategory." })
+        if (data.hasOwnProperty('subcategory') && !checkString(subcategory)) return res.status(400).send({ status: false, message: "Please Provide Subcategory." })
         if (!validateName(subcategory)) return res.status(400).send({ status: false, message: "Invalid Subcategory." });
 
         //=====================Checking the value of reviews=====================//
         if (reviews && Object.values(reviews) !== 0) { return res.status(400).send({ status: false, message: "You can't put reviews now." }) }
 
         //=====================Checking Date Format of releasedAt by Regex=====================//
-        if (!checkString(releasedAt)) return res.status(400).send({ status: false, message: "Please Provide releasedAt" });
+        if (data.hasOwnProperty('releasedAt') && !checkString(releasedAt)) return res.status(400).send({ status: false, message: "Please Provide releasedAt" });
         if (!validateDate(releasedAt)) return res.status(400).send({ status: false, message: "Invalid Date Format. You should use this format (YYYY-MM-DD)" });
 
 
@@ -103,7 +103,7 @@ const getAllBooks = async (req, res) => {
 
             //=====================Checking Mandotory Field=====================//
             if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You have to put only userId or category or subcategory." }) }
-            if (!(userId || category || subcategory)) { return res.status(400).send({ status: false, message: "You have to put the value of userId or category or subcategory." }) }
+            // if (!(userId || category || subcategory)) { return res.status(400).send({ status: false, message: "You have to put the value of userId or category or subcategory." }) }
 
             //==================== Storing Query Data in Empty object =====================//
             let obj = { isDeleted: false }
@@ -113,10 +113,12 @@ const getAllBooks = async (req, res) => {
                 if (!ObjectId.isValid(userId)) { return res.status(400).send({ status: false, message: `This ID: ${userId} is not Valid.` }) }
                 obj.userId = userId.trim()
             }
+
             if (category) {
                 if (category.trim().length == 0) { return res.status(400).send({ status: false, message: `Please insert valid category.` }) }
                 obj.category = category.trim()
             }
+
             if (subcategory) {
                 if (subcategory.trim().length == 0) { return res.status(400).send({ status: false, message: "Please insert valid subcategory." }) }
                 obj.subcategory = subcategory.trim()
@@ -193,15 +195,15 @@ const updateBookById = async (req, res) => {
         if (!(title || excerpt || releasedAt || ISBN)) { return res.status(400).send({ status: false, message: "You have to put the  title or excerpt or releasedAt or ISBN." }) }
 
         //=====================Validation of Title=====================//
-        if (title && !checkString(title)) return res.status(400).send({ status: false, message: "Please Provide Title." })
+        if (body.hasOwnProperty('title') && !checkString(title)) return res.status(400).send({ status: false, message: "Please Provide Title." })
         if (title && !validateName(title)) return res.status(400).send({ status: false, message: "Invalid Title." });
 
         //=====================Validation of Excerpt=====================//
-        if (excerpt && !checkString(excerpt)) return res.status(400).send({ status: false, message: "Please Provide Excerpt." })
+        if (body.hasOwnProperty('excerpt') && !checkString(excerpt)) return res.status(400).send({ status: false, message: "Please Provide Excerpt." })
         if (excerpt && !validateName(excerpt)) return res.status(400).send({ status: false, message: "Invalid Excerpt." });
 
         //=====================Validation of ISBN=====================//
-        if (ISBN && !checkString(ISBN)) return res.status(400).send({ status: false, message: "Please Provide ISBN." })
+        if (body.hasOwnProperty('ISBN') && !checkString(ISBN)) return res.status(400).send({ status: false, message: "Please Provide ISBN." })
         if (ISBN && !validateISBN(ISBN)) return res.status(400).send({ status: false, message: "Invalid ISBN." });
 
         //=====================Checking Date Format of releasedAt by Regex=====================//
@@ -240,6 +242,7 @@ const deleteBookById = async (req, res) => {
         //=====================We don't accept any input from Query Param=====================//
         if (checkInputsPresent(Query)) { return res.status(400).send({ status: false, message: "You can't put anything in Query." }) }
 
+        if (!ObjectId.isValid(bookId)) { return res.status(400).send({ status: false, message: `This BookId: ${bookId} is not Valid.` }) }
         //=====================Fetching the data of Book(not deleted) then Delete=====================//
         let deleteByBookId = await bookModel.findOneAndUpdate({ _id: bookId, isDeleted: false },
             { isDeleted: true, deletedAt: Date.now() }, { new: true })

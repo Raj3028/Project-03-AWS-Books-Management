@@ -20,23 +20,23 @@ const createUser = async (req, res) => {
         // if (!(title && name && phone && email && password)) { return res.status(400).send({ status: false, message: "All Fields are Mandatory." }) }
 
         //=====================Validation of Title=====================//
-        if (!checkString(title)) return res.status(400).send({ status: false, message: "Please Provide Title." })
+        if (user.hasOwnProperty('title') && !checkString(title)) return res.status(400).send({ status: false, message: "Please Provide Title." })
         if (!validateTitle(title)) return res.status(400).send({ status: false, message: "Invalid Title! Please put title between ('Mr' or 'Mrs' or 'Miss')." });
 
         //=====================Validation of Name=====================//
-        if (!checkString(name)) return res.status(400).send({ status: false, message: "Please Provide Name." })
+        if (user.hasOwnProperty('name') && !checkString(name)) return res.status(400).send({ status: false, message: "Please Provide Name." })
         if (!validateName(name)) return res.status(400).send({ status: false, message: "Invalid Name Provided" });
 
         //=====================Validation of Phone Number=====================//
-        if (!checkString(phone)) return res.status(400).send({ status: false, message: "Please Provide Phone Number." })
+        if (user.hasOwnProperty('phone') && !checkString(phone)) return res.status(400).send({ status: false, message: "Please Provide Phone Number." })
         if (!validateMobileNo(phone)) return res.status(400).send({ status: false, message: "Invalid Phone Number Provided." });
 
         //=====================Validation of EmailID=====================//
-        if (!checkString(email)) return res.status(400).send({ status: false, message: "Please Provide EmailID." })
+        if (user.hasOwnProperty('email') && !checkString(email)) return res.status(400).send({ status: false, message: "Please Provide EmailID." })
         if (!validateEmail(email)) return res.status(400).send({ status: false, message: "Invalid EmailID Format." });
 
         //=====================Validation of Password=====================//
-        if (!checkString(password)) return res.status(400).send({ status: false, message: "Please Provide Password." })
+        if (user.hasOwnProperty('password') && !checkString(password)) return res.status(400).send({ status: false, message: "Please Provide Password." })
         if (!validatePassword(password)) return res.status(400).send({ status: false, message: "Invalid Password Format." });
 
 
@@ -44,11 +44,11 @@ const createUser = async (req, res) => {
         if (address) {
 
             //=====================Validation of Street Address=====================//
-            if (!checkString(address.street)) return res.status(400).send({ status: false, message: "Please Provide Valid Street Address." })
+            if (user.address.hasOwnProperty('street') && !checkString(address.street)) return res.status(400).send({ status: false, message: "Please Provide Valid Street Address." })
             if (!validateName(address.street)) return res.status(400).send({ status: false, message: "Invalid Street Address Format." });
 
             //=====================Validation of City Address=====================//
-            if (!checkString(address.city)) return res.status(400).send({ status: false, message: "Please Provide Valid City Address." })
+            if (user.address.hasOwnProperty('city') && !checkString(address.city)) return res.status(400).send({ status: false, message: "Please Provide Valid City Address." })
             if (!validateName(address.city)) return res.status(400).send({ status: false, message: "Invalid City Address Format." });
 
             //=====================Validation of Address Pincode=====================//
@@ -89,10 +89,10 @@ const loginUser = async (req, res) => {
         // if (!(email && password)) { return res.status(400).send({ status: false, message: "All Fields are Mandatory(i.e. email & password)." }) }
 
         //=====================Checking Format of Email & Password by the help of Regex=====================//
-        if (!checkString(email)) return res.status(400).send({ status: false, message: "EmailId required to login" })
+        if (data.hasOwnProperty('email') && !checkString(email)) return res.status(400).send({ status: false, message: "EmailId required to login" })
         if (!validateEmail(email)) { return res.status(400).send({ status: false, message: "Please Check EmailID." }) }
 
-        if (!checkString(password)) return res.status(400).send({ status: false, message: "Password required to login" })
+        if (data.hasOwnProperty('password') && !checkString(password)) return res.status(400).send({ status: false, message: "Password required to login" })
         if (!validatePassword(password)) { return res.status(400).send({ status: false, message: "Re-enter your Correct Password." }) }
 
         //=====================Fetch Data from DB=====================//
