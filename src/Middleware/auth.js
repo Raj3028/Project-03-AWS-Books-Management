@@ -3,7 +3,7 @@ const JWT = require('jsonwebtoken')
 const userModel = require("../Model/userModel")
 const bookModel = require('../Model/bookModel')
 const ObjectId = require('mongoose').Types.ObjectId
-
+const { checkInputsPresent, checkString, validatePincode, validateName, validateEmail, validatePassword, validateTitle, validateMobileNo, validateISBN, validateDate } = require('../Validator/validator')
 
 //<<<=====================This function used for Authentication=====================>>>//
 const Authentication = async (req, res, next) => {
@@ -55,20 +55,24 @@ const Authorisation = async (req, res, next) => {
         }
 
 
-        let data = req.body.userId
-        
-        if (data.trim().length == 0) { return res.status(400).send({ status: false, message: "Please insert valid userId." }) }
-        if (!ObjectId.isValid(data)) { return res.status(400).send({ status: false, message: `This UserId: ${data} is not Valid.` }) }
+        let data = req.body
 
-        const checkUserId = await userModel.findOne({ _id: data, isDeleted: false })
-        if (!checkUserId) { return res.status(400).send({ status: false, message: `This UserId: ${data} is not Exist.` }) }
-      
+        let { userId } = data
+
+        if (!checkInputsPresent(data)) return res.status(400).send({ status: false, message: "No data found from body!" });
+
+        if (!checkString(userId)) { return res.status(400).send({ status: false, message: "Please Insert userId." }) }
+        if (!ObjectId.isValid(userId)) { return res.status(400).send({ status: false, message: `This UserId: ${userId} is not Valid.` }) }
+
+        const checkUserId = await userModel.findOne({ _id: userId, isDeleted: false })
+        if (!checkUserId) { return res.status(400).send({ status: false, message: `This UserId: ${userId} is not Exist.` }) }
+
         if (checkUserId['_id'].toString() !== req.token.payload.userId) {
             return res.status(403).send({ status: false, message: "Unauthorized User Access!" })
         }
 
         next()
-     
+
 
     } catch (error) {
 

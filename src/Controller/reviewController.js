@@ -19,20 +19,35 @@ const createReview = async (req, res) => {
 
         if (!ObjectId.isValid(BookId)) { return res.status(400).send({ status: false, message: `This BookId: ${BookId} is not Valid.` }) }
         // if (isDeleted == true) { return res.status(400).send({ status: false, message: "You can't put isDeleted: true! It should be false at the time of creation (or by default)." }) }
-        if (Object.keys(data).length === 0) { return res.status(400).send({ status: false, message: "Please Provide Details to Create Review." }) }
+        if (!checkInputsPresent(data)) { return res.status(400).send({ status: false, message: "Please Provide Details to Create Review." }) }
         if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You have to put only review & rating & reviewedBy,." }) }
 
         let checkBookId = await bookModel.findOne({ _id: BookId, isDeleted: false })
         if (!checkBookId) { return res.status(400).send({ status: false, message: `Book with this ${BookId} is not Exist or already been deleted.` }) }
 
-
-        if (data.hasOwnProperty('reviewedBy') && !checkString(reviewedBy) && !validateName(reviewedBy)) { return res.status(400).send({ status: false, message: "Please Provide Valid Name in reviewedBy." }) }
-        if (data.hasOwnProperty('review') && !checkString(review) && !validateName(review)) { return res.status(400).send({ status: false, message: "Please Provide Valid Review." }) }
-
-
-        if (rating && (typeof rating !== "number") && (rating === 0) && (rating < 1 || rating > 5)) {
-            return res.status(400).send({ status: false, message: "Please enter valid rating in between range (1 to 5)." })
+        if (data.hasOwnProperty('reviewedBy')) {
+            if (!checkString(reviewedBy) || !validateName(reviewedBy)) return res.status(400).send({ status: false, message: "Please Provide Valid Name in reviewedBy or delete the key." });
         }
+
+        if (data.hasOwnProperty('review')) {
+            if (!checkString(review) || !genRegex.test(review)) return res.status(400).send({ status: false, message: "Please Provide Valid Review." });
+        }
+
+
+        if (data.hasOwnProperty('rating')) {
+            if ((typeof rating !== "number") || (rating === 0) || !(rating > 1 && rating < 5)) {
+                return res.status(400).send({ status: false, message: "Please enter valid rating (number) in between range (1 to 5)." });
+            }
+        }
+
+
+        // if (data.hasOwnProperty('reviewedBy') && !checkString(reviewedBy) && !validateName(reviewedBy)) { return res.status(400).send({ status: false, message: "Please Provide Valid Name in reviewedBy." }) }
+        // if (data.hasOwnProperty('review') && !checkString(review) && !validateName(review)) { return res.status(400).send({ status: false, message: "Please Provide Valid Review." }) }
+
+
+        // if (rating && (typeof rating !== "number") && (rating === 0) && (rating < 1 || rating > 5)) {
+        //     return res.status(400).send({ status: false, message: "Please enter valid rating in between range (1 to 5)." })
+        // }
 
         // if (!rating && checkString(rating)) {
         //     return res.status(400).send({ status: false, message: "Please enter rating as Number." })
@@ -44,7 +59,7 @@ const createReview = async (req, res) => {
 
         if (!rating) { return res.status(400).send({ status: false, message: "Please enter rating" }) }
 
-       
+
 
         // if (typeof rating !== "number") {
         //     return res.status(400).send({ status: false, message: "Please enter valid rating." })
@@ -60,7 +75,7 @@ const createReview = async (req, res) => {
 
         data.bookId = BookId
         data.reviewedAt = Date.now()
-        if (!reviewedBy) { reviewedBy = 'Guest' }
+        // if (!reviewedBy) { reviewedBy = 'Guest' }
 
         let createReview = await reviewModel.create(data)
 
@@ -85,6 +100,7 @@ const createReview = async (req, res) => {
     }
 
 }
+
 //<<<=====================This function is used for Update Reviews of Books=====================>>>//
 const updateReview = async (req, res) => {
     try {
@@ -105,17 +121,38 @@ const updateReview = async (req, res) => {
         if (!checkReviewId) { return res.status(400).send({ status: false, message: `This ReviewID: ${reviewId} is not exist in DB.` }) }
 
 
-        if (Object.keys(dataFromBody).length === 0) { return res.status(400).send({ status: false, message: "Please Provide Details to Update Review." }) }
+        if (!checkInputsPresent(dataFromBody)) { return res.status(400).send({ status: false, message: "Please Provide Details to Update Review." }) }
+        if (checkInputsPresent(rest)) return res.status(400).send({ status: false, message: "please provide required details only (.i.e. review or rating or reviewedBy or both) " });
 
 
-        if (dataFromBody.hasOwnProperty('reviewedBy') && !checkString(reviewedBy) && !validateName(reviewedBy)) { return res.status(400).send({ status: false, message: "Please Provide Valid Name in reviewedBy." }) }
-
-        if (dataFromBody.hasOwnProperty('review') && !checkString(review) && !validateName(review)) { return res.status(400).send({ status: false, message: "Please Provide Valid Review." }) }
-
-
-        if (rating && (typeof rating !== "number") && (rating === 0) && (rating < 1 || rating > 5)) {
-            return res.status(400).send({ status: false, message: "Please enter valid rating in between range (1 to 5)." })
+        if (dataFromBody.hasOwnProperty('reviewedBy')) {
+            if (!checkString(reviewedBy) || !validateName(reviewedBy)) return res.status(400).send({ status: false, message: "Please Provide Valid Name (in string) in reviewedBy." });
         }
+
+        if (dataFromBody.hasOwnProperty('review')) {
+            if (!checkString(review) || !genRegex.test(review)) {
+                return res.status(400).send({ status: false, message: "Please Provide Valid Review (in string) ." });
+            }
+        }
+
+
+        if (data.hasOwnProperty('rating')) {
+            if ((typeof rating !== "number") || (rating === 0) || !(rating >= 1 && rating <= 5)) {
+                return res.status(400).send({ status: false, message: "Please enter valid rating (number) in between range (1 to 5)." });
+            }
+        }
+
+
+
+
+        // if (dataFromBody.hasOwnProperty('reviewedBy') && !checkString(reviewedBy) && !validateName(reviewedBy)) { return res.status(400).send({ status: false, message: "Please Provide Valid Name in reviewedBy." }) }
+
+        // if (dataFromBody.hasOwnProperty('review') && !checkString(review) && !validateName(review)) { return res.status(400).send({ status: false, message: "Please Provide Valid Review." }) }
+
+
+        // if (rating && (typeof rating !== "number") && (rating === 0) && (rating < 1 || rating > 5)) {
+        //     return res.status(400).send({ status: false, message: "Please enter valid rating in between range (1 to 5)." })
+        // }
 
         // if (rating && ) {
         //     return res.status(400).send({ status: false, message: "Please enter rating in between 1 to 5." })
@@ -146,6 +183,7 @@ const updateReview = async (req, res) => {
     }
 
 }
+
 
 //<<<=====================This function is used for Delete Reviews of Books=====================>>>//
 const deleteReview = async (req, res) => {

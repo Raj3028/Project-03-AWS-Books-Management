@@ -4,17 +4,17 @@
 const checkInputsPresent = (value) => { return (Object.keys(value).length > 0); }
 
 //===================== Validating that the Input must be a non-empty String =====================//
-// const checkString = (value) => { return ((typeof (value) === 'string' && value.trim().length > 0)); }
-
 const checkString = function (value) {
-    if (typeof value == "number" || typeof value == "undefined" || typeof value == null) { return false }
+    if (typeof value == "number" || typeof value == "undefined" || value == null) { return false }
     if (typeof value == "string" && value.trim().length == 0) { return false }
     return true
 }
 
 //===================== Function to validate the input value with Regex =====================//
 const validateName = (value) => { return (/^(?=.{1,50}$)[a-z]+(?:['_.\s][a-z]+)*$/i.test(value)); }
-const validateEmail = (value) => { return (/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(value)); }
+const validateEmail = (value) => { return (/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/.test(value)); }
+// /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/
+
 const validatePassword = (value) => { return (/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,15}$/.test(value)); }
 const validateMobileNo = (value) => { return ((/^((\+91)?|91)?[6789][0-9]{9}$/g).test(value)); }
 const validateTitle = (value) => { return ["Mr", "Mrs", "Miss"].indexOf(value) !== -1 }
