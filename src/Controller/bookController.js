@@ -4,7 +4,9 @@ const bookModel = require('../Model/bookModel')
 const userModel = require("../Model/userModel")
 const reviewModel = require('../Model/reviewModel')
 const ObjectId = require('mongoose').Types.ObjectId
-const { checkInputsPresent, checkString, validateName, validateISBN, validateDate } = require('../Validator/validator')
+const { checkInputsPresent, checkString, validateName, validateTName, validateISBN, validateDate } = require('../Validator/validator')
+
+
 
 
 //<<<=====================This function is used for Create Book=====================>>>//
@@ -17,15 +19,7 @@ const createBook = async (req, res) => {
 
         //=====================Checking Mandotory Field=====================//
         if (!checkInputsPresent(data)) return res.status(400).send({ status: false, message: "No data found from body!" });
-        if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You can't input anything except title, excerpt, userId, ISBN, category, subcategory & releasedAt." }) }
-
-        // if (!(title && excerpt && userId && ISBN && category && subcategory && releasedAt)) {
-        //     return res.status(400).send({ status: false, message: "All Fields are Mandatory(i.e. title, excerpt, userId, ISBN, category, subcategory, releasedAt)." })
-        // }
-        // if (userId.trim().length == 0) { return res.status(400).send({ status: false, message: "Please insert valid userId." }) }
-        // if (!checkInputsPresent(data)) { return res.status(400).send({ status: false, message: "No data found from body! Provide Mandatory Fields(i.e. title, excerpt, userId, ISBN, category, subcategory, releasedAt)." }) }
-
-        // if (data.isDeleted == true) { return res.status(400).send({ status: false, message: "You can't put isDeleted: true! It should be false at the time of creation (or by default)." }) }
+        if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You can input only title, excerpt, userId, ISBN, category, subcategory & releasedAt." }) }
 
         //=====================Checking the userId is Valid or Not by Mongoose=====================//
         if (!checkString(userId)) { return res.status(400).send({ status: false, message: "Please Insert userId." }) }
@@ -36,32 +30,31 @@ const createBook = async (req, res) => {
         if (!checkUserId) { return res.status(400).send({ status: false, message: `${userId} is not Exist.` }) }
 
         //=====================Validation of Title=====================//
-        if (!checkString(title)) return res.status(400).send({ status: false, message: "Please Provide Title." })
-        if (!validateName(title)) return res.status(400).send({ status: false, message: "Invalid Title." });
+        if (!checkString(title)) return res.status(400).send({ status: false, message: "Please Provide Title of Book." })
+        if (!validateTName(title)) return res.status(400).send({ status: false, message: "Invalid Title." });
 
         //=====================Validation of Excerpt=====================//
-        if (!checkString(excerpt)) return res.status(400).send({ status: false, message: "Please Provide Excerpt." })
+        if (!checkString(excerpt)) return res.status(400).send({ status: false, message: "Please Provide Book Excerpt." })
         if (!validateName(excerpt)) return res.status(400).send({ status: false, message: "Invalid Excerpt." });
 
         //=====================Validation of ISBN=====================//
-        if (!checkString(ISBN)) return res.status(400).send({ status: false, message: "Please Provide ISBN." })
+        if (!checkString(ISBN)) return res.status(400).send({ status: false, message: "Please Provide Book ISBN." })
         if (!validateISBN(ISBN)) return res.status(400).send({ status: false, message: "Invalid ISBN." });
 
         //=====================Validation of category=====================//
-        if (!checkString(category)) return res.status(400).send({ status: false, message: "Please Provide Category." })
+        if (!checkString(category)) return res.status(400).send({ status: false, message: "Please Provide Book Category." })
         if (!validateName(category)) return res.status(400).send({ status: false, message: "Invalid Category." });
 
         //=====================Validation of subcategory=====================//
-        if (!checkString(subcategory)) return res.status(400).send({ status: false, message: "Please Provide Subcategory." })
+        if (!checkString(subcategory)) return res.status(400).send({ status: false, message: "Please Provide Book Subcategory." })
         if (!validateName(subcategory)) return res.status(400).send({ status: false, message: "Invalid Subcategory." });
 
         //=====================Checking the value of reviews=====================//
         if (reviews && Object.values(reviews) !== 0) { return res.status(400).send({ status: false, message: "You can't put reviews now." }) }
 
         //=====================Checking Date Format of releasedAt by Regex=====================//
-        if (!checkString(releasedAt)) return res.status(400).send({ status: false, message: "Please Provide releasedAt" });
+        if (!checkString(releasedAt)) return res.status(400).send({ status: false, message: "Please Provide Book releasedAt Date." });
         if (!validateDate(releasedAt)) return res.status(400).send({ status: false, message: "Invalid Date Format. You should use this format (YYYY-MM-DD)" });
-
 
         //=====================Fetching title from DB and Checking Duplicate title is Present or Not=====================//
         let checkDuplicateTitle = await bookModel.findOne({ title: title })
@@ -95,59 +88,41 @@ const getAllBooks = async (req, res) => {
 
         let query = req.query
 
-        //====================Check Presence of Query Keys=====================//
-        // if (Object.keys(query).length !== 0) {
-
         //=====================Destructuring User Data from Query =====================//
         let { userId, category, subcategory, ...rest } = query
 
         //=====================Checking Mandotory Field=====================//
         if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You can put only userId or category or subcategory." }) }
-        // if (!(userId || category || subcategory)) { return res.status(400).send({ status: false, message: "You have to put the value of userId or category or subcategory." }) }
 
         //==================== Storing Query Data in Empty object =====================//
-        // let obj = { isDeleted: false }
+        let obj = { isDeleted: false }
 
-        // if (userId) {
-        //     if (!checkInputsPresent(userId)) { return res.status(400).send({ status: false, message: `Please insert valid userId.` }) }
-        //     if (!ObjectId.isValid(userId)) { return res.status(400).send({ status: false, message: `This ID: ${userId} is not Valid.` }) }
-        //     obj.userId = userId.trim()
-        // }
+        if (userId) {
+            if (!checkInputsPresent(userId)) { return res.status(400).send({ status: false, message: `Please insert valid userId.` }) }
+            if (!ObjectId.isValid(userId)) { return res.status(400).send({ status: false, message: `This ID: ${userId} is not Valid.` }) }
+            obj.userId = userId.trim()
+        }
 
-        // if (category) {
-        //     if (!checkInputsPresent(category)) { return res.status(400).send({ status: false, message: `Please insert valid category.` }) }
-        //     obj.category = category.trim()
-        // }
+        if (category) {
+            if (!checkInputsPresent(category)) { return res.status(400).send({ status: false, message: `Please insert valid category.` }) }
+            obj.category = category.trim()
+        }
 
-        // if (subcategory) {
-        //     if (!checkInputsPresent(subcategory)) { return res.status(400).send({ status: false, message: "Please insert valid subcategory." }) }
-        //     obj.subcategory = subcategory.trim()
-        // }
+        if (subcategory) {
+            if (!checkInputsPresent(subcategory)) { return res.status(400).send({ status: false, message: "Please insert valid subcategory." }) }
+            obj.subcategory = subcategory.trim()
+        }
 
         //x=====================Fetching All Data from Book DB=====================x//
-        let getDataByQuery = await bookModel.find(query, { isDeleted: false }).select({ title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1 })
+        let getDataByQuery = await bookModel.find(obj).select({ title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1 })
 
         //===================== Checking length of getDataByQuery =====================//
-        if (getDataByQuery.length == 0) { return res.status(404).send({ status: false, message: "Book data is not exist." }) }
+        if (getDataByQuery.length == 0) { return res.status(404).send({ status: false, message: "Book data is not exist!" }) }
 
         //===================== Sorting Alphabetically by Title =====================//
         const sortBook = getDataByQuery.sort((a, b) => a.title.localeCompare(b.title))
 
-        return res.status(200).send({ status: true, message: 'Books list', data: sortBook })
-
-        // }
-
-
-        // //x=====================Fetching All Data from Book DB=====================x//
-        // let getAllData = await bookModel.find({ isDeleted: false }).select({ title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1 }).sort({ title: 1 })
-
-        // //===================== Checking length of getAllData =====================//
-        // if (getAllData.length == 0) { return res.status(400).send({ status: false, message: "Book data is not exist." }) }
-
-        // //===================== Sorting Alphabetically by Title =====================//
-        // const sortAllBook = getAllData.sort((a, b) => a.title.localeCompare(b.title))
-
-        // res.status(200).send({ status: true, message: 'Books list', data: sortAllBook })
+        res.status(200).send({ status: true, message: 'Books list', data: sortBook })
 
     } catch (error) {
 
@@ -173,11 +148,12 @@ const getBookById = async (req, res) => {
         if (!books) { return res.status(404).send({ status: false, message: "Given data is not exist! No Data Found." }) }
 
         //=====================Fetching All Data from Review DB and Checking the value of Review=====================//
-        let reviewsData = await reviewModel.find({ bookId: bookId, isDeleted: false })
-        // if (result.reviews == 0) result._doc.reviewsData = [];
+        let reviewsData = await reviewModel.find({ bookId: bookId, isDeleted: false }).select({ __v: 0, updatedAt: 0, createdAt: 0, isDeleted: 0 })
+
+        //x===================== Fetching From Review Object into Book Data =====================x//
         books._doc.reviewData = reviewsData
 
-        res.status(200).send({ status: true, message: 'Books List', data: result })
+        res.status(200).send({ status: true, message: 'Books List', data: books })
 
     } catch (error) {
 
@@ -197,12 +173,12 @@ const updateBookById = async (req, res) => {
 
         //=====================Checking Mandotory Field=====================//
         if (!checkInputsPresent(body)) return res.status(400).send({ status: false, message: "please provide some details(i.e. title, excerpt, releasedAt, ISBN) to update !!!" });
+        if (checkInputsPresent(req.query)) { return res.status(400).send({ status: false, message: "You can't put anything in Query" }) }
         if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You can put only title or excerpt or releasedAt or ISBN." }) }
-        // if (!(title || excerpt || releasedAt || ISBN)) { return res.status(400).send({ status: false, message: "You have to put the  title or excerpt or releasedAt or ISBN." }) }
 
         //=====================Validation of Title=====================//
         if (body.hasOwnProperty('title') && !checkString(title)) return res.status(400).send({ status: false, message: "Please Provide Title." })
-        if (title && !validateName(title)) return res.status(400).send({ status: false, message: "Invalid Title." });
+        if (title && !validateTName(title)) return res.status(400).send({ status: false, message: "Invalid Title." });
 
         //=====================Validation of Excerpt=====================//
         if (body.hasOwnProperty('excerpt') && !checkString(excerpt)) return res.status(400).send({ status: false, message: "Please Provide Excerpt." })
@@ -211,10 +187,9 @@ const updateBookById = async (req, res) => {
         //=====================Validation of ISBN=====================//
         if (body.hasOwnProperty('ISBN') && !checkString(ISBN)) return res.status(400).send({ status: false, message: "Please Provide ISBN." })
         if (ISBN && !validateISBN(ISBN)) return res.status(400).send({ status: false, message: "Invalid ISBN." });
-        ""
+
         //=====================Checking Date Format of releasedAt by Regex=====================//
         if (body.hasOwnProperty('releasedAt') && !validateDate(releasedAt)) return res.status(400).send({ status: false, message: "Invalid Date Format. You should use this format (YYYY-MM-DD)" });
-
 
         //=====================Fetching data of Title from DB and Checking Duplicate Title is Present or Not=====================//
         let uniqueTitle = await bookModel.findOne({ title: title })
@@ -262,6 +237,8 @@ const deleteBookById = async (req, res) => {
         res.status(500).send({ status: 'error', error: error.message })
     }
 }
+
+
 
 
 

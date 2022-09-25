@@ -3,7 +3,11 @@ const JWT = require('jsonwebtoken')
 const userModel = require("../Model/userModel")
 const bookModel = require('../Model/bookModel')
 const ObjectId = require('mongoose').Types.ObjectId
-const { checkInputsPresent, checkString, validatePincode, validateName, validateEmail, validatePassword, validateTitle, validateMobileNo, validateISBN, validateDate } = require('../Validator/validator')
+const { checkInputsPresent, checkString } = require('../Validator/validator')
+
+
+
+
 
 //<<<=====================This function used for Authentication=====================>>>//
 const Authentication = async (req, res, next) => {
@@ -80,6 +84,9 @@ const Authorisation = async (req, res, next) => {
     }
 
 }
+
+
+
 
 //=====================Module Export=====================//
 module.exports = { Authentication, Authorisation }

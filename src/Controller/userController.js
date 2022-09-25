@@ -1,7 +1,10 @@
 //=====================Importing Module and Packages=====================//
 const userModel = require("../Model/userModel")
 const JWT = require('jsonwebtoken')
-const { checkInputsPresent, checkString, validatePincode, validateName, validateEmail, validatePassword, validateTitle, validateMobileNo } = require('../Validator/validator')
+const { checkInputsPresent, checkString, validatePincode, validateName, validateSName, validateEmail, validatePassword, validateTitle, validateMobileNo } = require('../Validator/validator')
+
+
+
 
 
 //<<<=====================This function is used for Registration User=====================>>>//
@@ -17,10 +20,6 @@ const createUser = async (req, res) => {
         if (!checkInputsPresent(user)) return res.status(400).send({ status: false, message: "Request Can't Be Empty." });
         if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You can't input anything except title, name, phone, email, password and address." }) }
 
-
-        //=====================Checking Mandotory Field=====================//
-        // if (!(title && name && phone && email && password)) { return res.status(400).send({ status: false, message: "All Fields are Mandatory." }) }
-
         //=====================Validation of Title=====================//
         if (!checkString(title)) return res.status(400).send({ status: false, message: "Please Provide Title." })
         if (!validateTitle(title)) return res.status(400).send({ status: false, message: "Invalid Title! Please input title as 'Mr' or 'Mrs' or 'Miss'." });
@@ -33,9 +32,17 @@ const createUser = async (req, res) => {
         if (!checkString(phone)) return res.status(400).send({ status: false, message: "Please Provide Phone Number." })
         if (!validateMobileNo(phone)) return res.status(400).send({ status: false, message: "Invalid Phone Number Provided." });
 
+        //=====================Fetching Phone No. from DB and Checking Duplicate Phone No. is Present or Not=====================//
+        let checkPhonePresent = await userModel.findOne({ phone: phone })
+        if (checkPhonePresent) return res.status(400).send({ status: false, message: `This ${phone} is already registered! Please Use Different Phone Number.` })
+
         //=====================Validation of EmailID=====================//
         if (!checkString(email)) return res.status(400).send({ status: false, message: "Please Provide EmailID." })
         if (!validateEmail(email)) return res.status(400).send({ status: false, message: "Invalid EmailID Format or Please input all letters in lowercase." });
+
+        //=====================Fetching Email from DB and Checking Duplicate Email is Present or Not=====================//
+        let checkEmailPresent = await userModel.findOne({ email: email })
+        if (checkEmailPresent) return res.status(400).send({ status: false, message: `This ${email} is already registered! Please Use Different EmailId for Registration.` });
 
         //=====================Validation of Password=====================//
         if (!checkString(password)) return res.status(400).send({ status: false, message: "Please Provide Password." })
@@ -51,25 +58,17 @@ const createUser = async (req, res) => {
             if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You can't input anything in address except street, city and pincode." }) }
 
             //=====================Validation of Street Address=====================//
-            // if (!checkString(address.street)) return res.status(400).send({ status: false, message: "Please Provide Valid Street Address." })
-            if (!validateName(address.street)) return res.status(400).send({ status: false, message: "Please Provide valid Street Address." });
+            if (address.hasOwnProperty('street')) {
+                if (!checkString(address.street)) return res.status(400).send({ status: false, message: "Please Provide valid Street Address." });
+            }
 
             //=====================Validation of City Address=====================//
-            // if (!checkString(address.city)) return res.status(400).send({ status: false, message: "Please Provide Valid City Address." })
-            if (!validateName(address.city)) return res.status(400).send({ status: false, message: "Please Provide valid City Address." });
-
+            if (!validateSName(address.city)) {
+                return res.status(400).send({ status: false, message: "Please Provide valid City Address(First alphabet alwayes be uppercase)." });
+            }
             //=====================Validation of Address Pincode=====================//
             if (!validatePincode(address.pincode)) return res.status(400).send({ status: false, message: "Please provide valid Pincode and Use 6 Digit Numbers in Pincode." });
         }
-
-        //=====================Fetching Phone No. from DB and Checking Duplicate Phone No. is Present or Not=====================//
-        let checkPhonePresent = await userModel.findOne({ phone: phone })
-        if (checkPhonePresent) return res.status(400).send({ status: false, message: `This ${phone} is already registered! Please Use Different Phone Number.` })
-
-        //=====================Fetching Email from DB and Checking Duplicate Email is Present or Not=====================//
-        let checkEmailPresent = await userModel.findOne({ email: email })
-        if (checkEmailPresent) return res.status(400).send({ status: false, message: `This ${email} is already registered! Please Use Different EmailId for Registration.` });
-
 
 
         //x=====================User Registration=====================x//
@@ -94,7 +93,7 @@ const loginUser = async (req, res) => {
 
         //=====================Checking User input is Present or Not =====================//
         if (!checkInputsPresent(data)) return res.status(400).send({ status: false, message: "You have to input email and password." });
-        if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You can't input anything except email and password." }) }
+        if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You can input only email and password." }) }
 
         //=====================Checking Format of Email & Password by the help of Regex=====================//
         if (!checkString(email)) return res.status(400).send({ status: false, message: "EmailId required to login" })
@@ -122,6 +121,7 @@ const loginUser = async (req, res) => {
         //x=====================Set Key with value in Response Header=====================x//
         res.setHeader("x-api-key", token)
 
+        //=====================Create a Object for Response=====================//
         let obj = { userId: userData['_id'].toString(), token: token, iat: (Math.floor(Date.now() / 1000)), exp: (Math.floor(Date.now() / 1000) + 60 * 60) }
 
         //=====================Send Token in Response Body=====================//
@@ -133,6 +133,9 @@ const loginUser = async (req, res) => {
     }
 
 }
+
+
+
 
 
 //=====================Module Export=====================//
