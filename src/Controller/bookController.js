@@ -9,13 +9,14 @@ const { checkInputsPresent, checkString, validateName, validateTName, validateIS
 
 
 
+
 //<<<=====================This function is used for Create Book=====================>>>//
 const createBook = async (req, res) => {
     try {
         let data = req.body
 
         //=====================Destructuring Book Body Data =====================//
-        let { title, excerpt, userId, ISBN, category, subcategory, reviews, releasedAt, ...rest } = data
+        let { title, excerpt, userId, ISBN, category, subcategory, reviews, releasedAt, isDeleted, ...rest } = data
 
         //=====================Checking Mandotory Field=====================//
         if (!checkInputsPresent(data)) return res.status(400).send({ status: false, message: "No data found from body!" });
@@ -49,8 +50,11 @@ const createBook = async (req, res) => {
         if (!checkString(subcategory)) return res.status(400).send({ status: false, message: "Please Provide Book Subcategory." })
         if (!validateName(subcategory)) return res.status(400).send({ status: false, message: "Invalid Subcategory." });
 
+        //=====================Checking the value of isDeleted=====================//
+        if (isDeleted && (isDeleted == true)) { return res.status(400).send({ status: false, message: "In Newly Created Book document should have isDeleted = false, or Ommit the attribute." }) }
+
         //=====================Checking the value of reviews=====================//
-        if (reviews && Object.values(reviews) !== 0) { return res.status(400).send({ status: false, message: "You can't put reviews now." }) }
+        if (reviews && Object.values(reviews) !== 0) { return res.status(400).send({ status: false, message: "You can't put reviews(greater than 0) now." }) }
 
         //=====================Checking Date Format of releasedAt by Regex=====================//
         if (!checkString(releasedAt)) return res.status(400).send({ status: false, message: "Please Provide Book releasedAt Date." });
@@ -59,13 +63,13 @@ const createBook = async (req, res) => {
         //=====================Fetching title from DB and Checking Duplicate title is Present or Not=====================//
         let checkDuplicateTitle = await bookModel.findOne({ title: title })
         if (checkDuplicateTitle) {
-            return res.status(409).send({ status: false, message: `This Book: ${title} is already exist. Please provide another Title.` })
+            return res.status(400).send({ status: false, message: `This Book: ${title} is already exist. Please provide another Title.` })
         }
 
         //=====================Fetching ISBN from DB and Checking Duplicate ISBN is Present or Not=====================//
         let checkDuplicateISBN = await bookModel.findOne({ ISBN: ISBN })
         if (checkDuplicateISBN) {
-            return res.status(409).send({ status: false, message: `This ISBN: ${ISBN} is already exist. Please provide another ISBN.` })
+            return res.status(400).send({ status: false, message: `This ISBN: ${ISBN} is already exist. Please provide another ISBN.` })
         }
 
         //x=====================Final Creation of Book=====================x//
@@ -145,7 +149,7 @@ const getBookById = async (req, res) => {
 
         //x=====================Fetching All Data from Book DB=====================x//
         let books = await bookModel.findOne({ _id: bookId, isDeleted: false }).select({ deletedAt: 0, ISBN: 0, __v: 0 });
-        if (!books) { return res.status(404).send({ status: false, message: "Given data is not exist! No Data Found." }) }
+        if (!books) { return res.status(404).send({ status: false, message: "Given data is not exist! or Already been Deleted." }) }
 
         //=====================Fetching All Data from Review DB and Checking the value of Review=====================//
         let reviewsData = await reviewModel.find({ bookId: bookId, isDeleted: false }).select({ __v: 0, updatedAt: 0, createdAt: 0, isDeleted: 0 })

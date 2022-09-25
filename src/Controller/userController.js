@@ -49,25 +49,30 @@ const createUser = async (req, res) => {
         if (!validatePassword(password)) return res.status(400).send({ status: false, message: "Invalid Password Format! Password Should be 8 to 15 Characters and have a mixture of uppercase and lowercase letters and contain one symbol and then at least one Number." });
 
 
-        //<<<=====================Checking Address is Present or not.=====================>>>//
-        if (address) {
+        // //<<<=====================Checking Address is Present or not.=====================>>>//
+        if (user.hasOwnProperty('address')) {
+
+            if (typeof address !== "object") return res.status(400).send({ status: false, message: "Address is Invalid type, should be an object" });
+            if (!checkInputsPresent(address)) return res.status(400).send({ status: false, message: "Address must have atleast one field between (street, city, pincode)" });
 
             let { street, city, pincode, ...rest } = address
 
-            //===================== Checking Address inputs =====================//
+            //===================== Checking Address inputs =====================//   
             if (checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You can't input anything in address except street, city and pincode." }) }
 
             //=====================Validation of Street Address=====================//
             if (address.hasOwnProperty('street')) {
-                if (!checkString(address.street)) return res.status(400).send({ status: false, message: "Please Provide valid Street Address." });
+                if (!checkString(street)) return res.status(400).send({ status: false, msg: `Invalid street (${street}) address Provided.` });
             }
-
             //=====================Validation of City Address=====================//
-            if (!validateSName(address.city)) {
-                return res.status(400).send({ status: false, message: "Please Provide valid City Address(First alphabet alwayes be uppercase)." });
+
+            if (address.hasOwnProperty('city')) {
+                if (!validateName(city)) return res.status(400).send({ status: false, msg: `Invalid City (${city}) address Provided.` });
             }
             //=====================Validation of Address Pincode=====================//
-            if (!validatePincode(address.pincode)) return res.status(400).send({ status: false, message: "Please provide valid Pincode and Use 6 Digit Numbers in Pincode." });
+            if (address.hasOwnProperty('pincode')) {
+                if (!validatePincode(pincode)) return res.status(400).send({ status: false, msg: `Invalid Pincode (${pincode}) Provided, provide valid Pincode with 6 Digit Numbers.` });
+            }
         }
 
 

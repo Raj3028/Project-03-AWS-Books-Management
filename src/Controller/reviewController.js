@@ -6,6 +6,7 @@ const { checkInputsPresent, checkString, validateName } = require('../Validator/
 
 
 
+
 //<<<=====================This function is used for Create Reviews of Books=====================>>>//
 const createReview = async (req, res) => {
     try {
@@ -45,7 +46,7 @@ const createReview = async (req, res) => {
         }
 
         //===================== Checking the Rating is present ot not =====================//
-        if (!rating) { return res.status(400).send({ status: false, message: "Please enter rating" }) }
+        if (!rating) { return res.status(400).send({ status: false, message: "Please enter Book rating(required)" }) }
 
         //===================== Creating a BookId Key inside Body and Store the Date value =====================//
         data.bookId = BookId
@@ -71,7 +72,7 @@ const createReview = async (req, res) => {
         //x===================== Fetching Review Object into Book Data =====================x//
         updateBookData._doc.reviewData = needObj
 
-        res.status(200).send({ status: true, message: "Success", data: updateBookData })
+        res.status(201).send({ status: true, message: "Success", data: updateBookData })
 
     } catch (error) {
 
@@ -97,11 +98,11 @@ const updateReview = async (req, res) => {
 
         //=====================Fetching Book Data from Book DB and Checking BookId is Present or Not=====================//
         let checkBookId = await bookModel.findOne({ _id: bookId, isDeleted: false })
-        if (!checkBookId) { return res.status(400).send({ status: false, message: `This BookID: ${bookId} is not exist in DB.` }) }
+        if (!checkBookId) { return res.status(400).send({ status: false, message: `This BookID: ${bookId} is not exist in DB! or Already been Deleted.` }) }
 
         //=====================Fetching Review Data from Review DB and Checking ReviewId is Present or Not=====================//
         let checkReviewId = await reviewModel.findOne({ _id: reviewId, isDeleted: false })
-        if (!checkReviewId) { return res.status(400).send({ status: false, message: `This ReviewID: ${reviewId} is not exist in DB.` }) }
+        if (!checkReviewId) { return res.status(400).send({ status: false, message: `This ReviewID: ${reviewId} is not exist in DB! or Already been Deleted.` }) }
 
         //===================== Checking Mandotory Field =====================//
         if (!checkInputsPresent(dataFromBody)) { return res.status(400).send({ status: false, message: "Please Provide Details to Update Review." }) }
@@ -114,7 +115,7 @@ const updateReview = async (req, res) => {
 
         //===================== Validation of Review =====================//
         if (dataFromBody.hasOwnProperty('review')) {
-            if (!checkString(review) || !validateName(review)) {
+            if (!checkString(review)) {
                 return res.status(400).send({ status: false, message: "Please Provide Valid Review (in string) ." });
             }
         }
@@ -166,14 +167,14 @@ const deleteReview = async (req, res) => {
 
         //===================== Checking the Book data by BookID =====================//
         let checkBookId = await bookModel.findOne({ _id: bookId, isDeleted: false });
-        if (!checkBookId) return res.status(400).send({ status: false, message: `This BookID: ${bookId} is not exist in DB.` });
+        if (!checkBookId) return res.status(404).send({ status: false, message: `This BookID: ${bookId} is not exist in DB! or Already been Deleted.` });
 
         //===================== Checking the Review data by ReviewID =====================//
         let checkReviewId = await reviewModel.findOne({ _id: reviewId, isDeleted: false });
-        if (!checkReviewId) return res.status(400).send({ status: false, message: `This ReviewID: ${reviewId} is not exist in DB.` });
+        if (!checkReviewId) return res.status(404).send({ status: false, message: `This ReviewID: ${reviewId} is not exist in DB! or Already been Deleted.` });
 
         //=====================Checking the Book Reviews is Present or Not in Document=====================//
-        if (checkBookId['reviews'] <= 0) return res.status(404).send({ status: false, message: `There is no reviews for the given book with BookID: ${bookId}.` });
+        if (checkBookId['reviews'] <= 0) return res.status(404).send({ status: false, message: `There is no reviews for the given book with this BookID: ${bookId}.` });
 
         //x===================== Fetching Review Data by ReviewId with BookId and Delete the Review =====================x//
         let deleteReview = await reviewModel.findOneAndUpdate(
@@ -195,6 +196,8 @@ const deleteReview = async (req, res) => {
     }
 
 }
+
+
 
 
 //=====================Module Export=====================//

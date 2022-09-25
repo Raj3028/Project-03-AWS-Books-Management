@@ -8,7 +8,6 @@ const { checkInputsPresent, checkString } = require('../Validator/validator')
 
 
 
-
 //<<<=====================This function used for Authentication=====================>>>//
 const Authentication = async (req, res, next) => {
     try {
@@ -41,24 +40,24 @@ const Authorisation = async (req, res, next) => {
 
     try {
 
-
+        //<<<===================== Authorising with BookId From Param =====================>>>//
         let bookIdFromParams = req.params.bookId
         if (bookIdFromParams) {
 
             if (!ObjectId.isValid(bookIdFromParams)) { return res.status(400).send({ status: false, message: `This UserId: ${bookIdFromParams} is not Valid.` }) }
 
             const checkBookId = await bookModel.findOne({ _id: bookIdFromParams, isDeleted: false })
-            if (!checkBookId) { return res.status(404).send({ status: false, message: `This BookId: ${bookIdFromParams} is not Exist.` }) }
+            if (!checkBookId) { return res.status(404).send({ status: false, message: `This BookId: ${bookIdFromParams} is not Exist! or Already been Deleted.` }) }
 
             if (checkBookId['userId'].toString() !== req.token.payload.userId) {
                 return res.status(403).send({ status: false, message: "Unauthorized User Access!" })
             }
 
-
             return next()
         }
 
 
+        //<<<===================== Authorising with UserId form Body =====================>>>//
         let data = req.body
 
         let { userId } = data
@@ -76,7 +75,6 @@ const Authorisation = async (req, res, next) => {
         }
 
         next()
-
 
     } catch (error) {
 
