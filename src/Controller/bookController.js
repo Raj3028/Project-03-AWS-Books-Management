@@ -54,7 +54,7 @@ const createBook = async (req, res) => {
         if (isDeleted && (isDeleted == true)) { return res.status(400).send({ status: false, message: "In Newly Created Book document should have isDeleted = false, or Ommit the attribute." }) }
 
         //=====================Checking the value of reviews=====================//
-        if (reviews && Object.values(reviews) !== 0) { return res.status(400).send({ status: false, message: "You can't put reviews(greater than 0) now." }) }
+        if (reviews && (reviews !== 0)) { return res.status(400).send({ status: false, message: "You can't put reviews(greater than 0) now." }) }
 
         //=====================Checking Date Format of releasedAt by Regex=====================//
         if (!checkString(releasedAt)) return res.status(400).send({ status: false, message: "Please Provide Book releasedAt Date." });
