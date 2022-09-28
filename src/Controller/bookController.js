@@ -5,7 +5,7 @@ const userModel = require("../Model/userModel")
 const reviewModel = require('../Model/reviewModel')
 const ObjectId = require('mongoose').Types.ObjectId
 const { checkInputsPresent, checkString, validateName, validateTName, validateISBN, validateDate } = require('../Validator/validator')
-
+const uploadFile = require('../aws/awsConfig')
 
 
 
@@ -13,6 +13,7 @@ const { checkInputsPresent, checkString, validateName, validateTName, validateIS
 //<<<=====================This function is used for Create Book=====================>>>//
 const createBook = async (req, res) => {
     try {
+
         let data = req.body
 
         //=====================Destructuring Book Body Data =====================//
@@ -72,6 +73,25 @@ const createBook = async (req, res) => {
             return res.status(400).send({ status: false, message: `This ISBN: ${ISBN} is already exist. Please provide another ISBN.` })
         }
 
+        //===================== Form-Data =====================//
+        let files = req.files
+        //<<<=============================== Generating AWS Link of Book Cover ===============================>>>//
+        //=====================Checking the Array Length of Form-Data=====================//
+        if (files && files.length > 0) {
+
+            let uploadedFileURL = await uploadFile(files[0])
+            //=====================Fetching BookCover from Book DB and Checking Duplicate BookCover is Present or Not=====================//
+            const uniqueCover = await bookModel.findOne({ bookCover: uploadedFileURL })
+            if (uniqueCover) return res.status(400).send({ status: false, message: "BookCover Already Exist." })
+
+            //===================== Assign the Key and Value of Book Cover into Data Body =====================//
+            data['bookCover'] = uploadedFileURL
+        }
+        else {
+            return res.status(400).send({ msg: "No File Found!" })
+        }
+
+
         //x=====================Final Creation of Book=====================x//
         let createBook = await bookModel.create(data)
 
@@ -83,6 +103,8 @@ const createBook = async (req, res) => {
     }
 
 }
+
+
 
 
 //<<<=====================This function is used for Get All Books=====================>>>//
@@ -136,6 +158,8 @@ const getAllBooks = async (req, res) => {
 }
 
 
+
+
 //<<<=====================This function is used for Get All Books by Path Parameter=====================>>>//
 const getBookById = async (req, res) => {
     try {
@@ -164,6 +188,8 @@ const getBookById = async (req, res) => {
         res.status(500).send({ status: 'error', error: error.message })
     }
 }
+
+
 
 
 //<<<=====================This function is used for Update Books by Path Parameter=====================>>>//
@@ -216,6 +242,8 @@ const updateBookById = async (req, res) => {
         res.status(500).send({ status: 'error', error: error.message })
     }
 }
+
+
 
 
 //<<<=====================This function is used for Delete Books by Path Parameter=====================>>>//

@@ -5,6 +5,12 @@ const ObjectId = mongoose.Schema.Types.ObjectId
 //=====================Creating Book's Schema=====================//
 const bookModel = new mongoose.Schema({
 
+    bookCover: {
+        type: String,
+        require: true,
+        unique: true,
+        trim: true
+    },
     title: {
         type: String,
         require: true,
