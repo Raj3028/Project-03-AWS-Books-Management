@@ -87,6 +87,11 @@
 - Create atleast 10 books for each user
 - Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
 
+- Add AWS S3 Link of BookCover in Book Controller:
+  - step1: postman/frontend sends a file to our node server in an API call 
+  - step2: Multer is able to grab that file and make it available to node server 
+  - step3: uploading this file to AWS S3
+
 ### GET /books
 
 - Returns all books in the collection that aren't deleted. Return only book \_id, title, excerpt, userId, category, releasedAt, reviews field. Response example [here](#get-books-response)
